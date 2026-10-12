@@ -1,5 +1,16 @@
 {
   "nev": "Teszt B",
   "szavak": {},
-  "ertekelesek": {}
+  "ertekelesek": {
+    "o4b3dcd60": {
+      "kik": "Próba-flamingók",
+      "mit": "bombát hatástalanítanak",
+      "hol": "egy furgonban",
+      "csavar": null,
+      "pont": 6,
+      "modositva": "2026-10-12T23:15:02.303Z",
+      "kedvenc": true,
+      "megjegyzes": "B szerint közepes"
+    }
+  }
 }
