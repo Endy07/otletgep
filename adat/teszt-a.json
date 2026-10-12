@@ -1,5 +1,23 @@
 {
   "nev": "Teszt A",
-  "szavak": {},
-  "ertekelesek": {}
+  "szavak": {
+    "wmv5vdf6g86pl": {
+      "oszlop": "kik",
+      "szoveg": "Próba-flamingók",
+      "torolve": false,
+      "modositva": "2026-10-12T23:14:47.704Z"
+    }
+  },
+  "ertekelesek": {
+    "o4b3dcd60": {
+      "kik": "Próba-flamingók",
+      "mit": "bombát hatástalanítanak",
+      "hol": "egy furgonban",
+      "csavar": null,
+      "pont": 8,
+      "modositva": "2026-10-12T23:14:48.635Z",
+      "kedvenc": true,
+      "megjegyzes": "A szerint jó"
+    }
+  }
 }
