@@ -7,6 +7,9 @@ const LABELS = { kik: "Kik?", mit: "Mit csinálnak?", hol: "Hol?", csavar: "Csav
 const PAGE = 100;
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const $ = (id) => document.getElementById(id);
+// A többiek fájljából jövő pont bármi lehet (a token nyilvános): mindig 0–10 egész számmá alakítjuk,
+// mielőtt HTML-be kerül, különben egy "pont": "<img onerror=…>" kódot futtatna a többiek böngészőjében.
+const pontSzam = (v) => { const n = Math.round(Number(v)); return n >= 1 && n <= 10 ? n : 0; };
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 const tarolo = keszitTarolo({ repo: BEALLIT.repo, token: (BEALLIT.darabok || []).join("") });
@@ -23,7 +26,7 @@ const locked = { kik: false, mit: false, hol: false, csavar: false };
 let twistOn = false, spinning = false, shown = PAGE, tab = "kozos";
 
 const sajat = () => emberek[fajl] || osszefesul({}, {});
-const nevOf = (f) => emberek[f]?.nev || f.replace(/\.json$/, "");
+const nevOf = (f) => (typeof emberek[f]?.nev === "string" && emberek[f].nev.trim() ? emberek[f].nev.slice(0, 30) : f.replace(/\.json$/, ""));
 const activeKeys = () => (twistOn ? KEYS : KEYS.slice(0, 3));
 const curIdea = () => ({ kik: cur.kik, mit: cur.mit, hol: cur.hol, csavar: twistOn ? cur.csavar : null });
 const enErtekelesem = (id) => sajat().ertekelesek?.[id] || null;
@@ -35,7 +38,9 @@ function sajatElemek(oszlop) {
   const out = [];
   for (const [f, d] of Object.entries(emberek)) {
     for (const [id, w] of Object.entries(d.szavak || {})) {
-      if (!w.torolve && w.oszlop === oszlop && w.szoveg) out.push({ id, f, szoveg: w.szoveg, szerzo: nevOf(f), modositva: w.modositva || "" });
+      if (w && !w.torolve && w.oszlop === oszlop && typeof w.szoveg === "string" && w.szoveg.trim()) {
+        out.push({ id, f, szoveg: w.szoveg.slice(0, 120), szerzo: String(nevOf(f)), modositva: String(w.modositva || "") });
+      }
     }
   }
   return out;
@@ -211,6 +216,7 @@ function betolt(o) {
 
 /* ---------- csillagok ---------- */
 function starsHtml(value) {
+  value = pontSzam(value);
   let h = "";
   for (let n = 1; n <= 10; n++) h += `<button class="star${n <= value ? " on" : ""}" data-star="${n}" aria-label="${n} pont">★<small>${n}</small></button>`;
   return h + `<span class="score">${value ? value + "/10" : "–/10"}</span>`;
@@ -248,11 +254,13 @@ function kozosOtletek() {
   const map = new Map();
   for (const [f, d] of Object.entries(emberek)) {
     for (const [id, e] of Object.entries(d.ertekelesek || {})) {
-      if (!e?.kik) continue;
+      if (!e || typeof e.kik !== "string" || typeof e.mit !== "string" || typeof e.hol !== "string") continue;
       let o = map.get(id);
-      if (!o) { o = { id, kik: e.kik, mit: e.mit, hol: e.hol, csavar: e.csavar || null, szivek: [], pontok: [], utolso: "" }; map.set(id, o); }
-      if (e.kedvenc) { o.szivek.push(nevOf(f)); if ((e.modositva || "") > o.utolso) o.utolso = e.modositva; }
-      if (e.pont > 0 || (e.megjegyzes || "").trim()) o.pontok.push({ nev: nevOf(f), pont: e.pont || 0, megjegyzes: e.megjegyzes || "", en: f === fajl });
+      if (!o) { o = { id, kik: e.kik, mit: e.mit, hol: e.hol, csavar: typeof e.csavar === "string" ? e.csavar : null, szivek: [], pontok: [], utolso: "" }; map.set(id, o); }
+      const modositva = String(e.modositva || "");
+      if (e.kedvenc === true) { o.szivek.push(String(nevOf(f))); if (modositva > o.utolso) o.utolso = modositva; }
+      const pont = pontSzam(e.pont), megjegyzes = typeof e.megjegyzes === "string" ? e.megjegyzes : "";
+      if (pont > 0 || megjegyzes.trim()) o.pontok.push({ nev: String(nevOf(f)), pont, megjegyzes, en: f === fajl });
     }
   }
   const lista = [...map.values()].filter((o) => o.szivek.length);
