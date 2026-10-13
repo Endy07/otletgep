@@ -9,7 +9,7 @@
 
 const API = "https://api.github.com/repos";
 const MAX_PROBALKOZAS = 3;
-export const TERKEPEK = ["szavak", "ertekelesek"];
+export const TERKEPEK = ["szavak", "ertekelesek", "koncepciok", "parbajok"];
 
 function base64Kodol(szoveg) {
   const bajtok = new TextEncoder().encode(szoveg);

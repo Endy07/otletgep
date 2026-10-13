@@ -1,6 +1,8 @@
 import { ALAP, otletId } from "./szavak.js";
 import { keszitTarolo, fajlnevNevbol, osszefesul } from "./tarolo.js";
 import { BEALLIT } from "./beallit.js";
+import { parKulcs, kovetkezoPar, rangsor } from "./parbaj.js";
+import { ujdonsagok } from "./ujdonsag.js";
 
 const KEYS = ["kik", "mit", "hol", "csavar"];
 const LABELS = { kik: "Kik?", mit: "Mit csinálnak?", hol: "Hol?", csavar: "Csavar" };
@@ -32,6 +34,33 @@ const curIdea = () => ({ kik: cur.kik, mit: cur.mit, hol: cur.hol, csavar: twist
 const enErtekelesem = (id) => sajat().ertekelesek?.[id] || null;
 const htmlOf = (o) => `<b>${esc(o.kik)}</b> ${esc(o.mit)} <b>${esc(o.hol)}</b>${o.csavar ? ", " + esc(o.csavar) : ""}.`;
 const textOf = (o) => `${o.kik} ${o.mit} ${o.hol}${o.csavar ? ", " + o.csavar : ""}.`;
+const str = (v, max = 400) => (typeof v === "string" ? v.slice(0, max) : "");
+const otletLink = (id) => `${location.origin}${location.pathname}?otlet=${encodeURIComponent(id)}`;
+
+/* ---------- koncepciókártya: a legfrissebb változat bárkitől ---------- */
+const MERETEK = { S: "S – pár hét", M: "M – 1–2 hónap", L: "L – 3+ hónap" };
+const KONCEPCIO_MEZOK = [
+  ["pitch", "Egymondatos pitch", "input", "Három majom bombát hatástalanít egy furgonban — és mindegyik másban fogyatékos."],
+  ["ige", "Fő ige (mit csinál a játékos 90%-ban?)", "input", "kiabál és vezeti a társát"],
+  ["klip", "Az 5 másodperces vicces klip", "textarea", "A vak majom rossz drótot vág el, mindenki üvölt…"],
+  ["helyszin", "Helyszín", "input", "egy furgon belseje"],
+  ["bge", "Mit ad hozzá a BestGameEva-alap?", "textarea", "Photon Voice, Fusion-hálózat, Steam-meghívó, zaj→inger rendszer…"],
+];
+function koncepcioja(id) {
+  let legjobb = null;
+  for (const [f, d] of Object.entries(emberek)) {
+    const k = d.koncepciok?.[id];
+    if (!k || typeof k !== "object") continue;
+    const ido = str(k.modositva, 40);
+    if (!legjobb || ido > legjobb.ido) {
+      legjobb = { ido, szerzo: nevOf(f), en: f === fajl, k: {
+        pitch: str(k.pitch, 200), ige: str(k.ige, 120), klip: str(k.klip), helyszin: str(k.helyszin, 120),
+        meret: MERETEK[k.meret] ? k.meret : "", bge: str(k.bge) } };
+    }
+  }
+  return legjobb;
+}
+const nyitottKartyak = new Set(), szerkesztettKartyak = new Set();
 
 /* ---------- elemek (beépített + haverok sajátjai) ---------- */
 function sajatElemek(oszlop) {
@@ -115,6 +144,10 @@ function nevBeallit(uj) {
   const u = new URL(location.href); u.searchParams.set("nev", nev); history.replaceState(null, "", u);
   tarolo.nevBeallit(fajl, nev);
   naplo = lsGet(`otletgep:naplo:${fajl}`, []);
+  // Első látogatáskor nincs „újdonság" (különben minden régi bejegyzés újnak látszana).
+  miota = lsGet(`otletgep:latogatas:${fajl}`, "");
+  if (!miota) lsSet(`otletgep:latogatas:${fajl}`, new Date().toISOString());
+  ujdonsagLatva = false;
   $("me").textContent = nev;
   return true;
 }
@@ -126,6 +159,7 @@ $("name-form").onsubmit = async (ev) => {
   emberek = { [fajl]: osszefesul(tarolo.helyiOlvas(fajl), {}) };
   renderAll();
   await frissit();
+  celOtletKezel();
 };
 $("rename").onclick = nevKeres;
 
@@ -269,19 +303,60 @@ function kozosOtletek() {
     o.atlag = p.length ? Math.round((p.reduce((a, b) => a + b, 0) / p.length) * 10) / 10 : null;
     o.db = p.length;
   }
+  const r = rangsor(Object.values(emberek).map((d) => d.parbajok), lista.map((o) => o.id));
+  for (const o of lista) o.parbaj = r[o.id];
   const s = $("kozos-sort").value;
   lista.sort((a, b) =>
     s === "hearts" ? b.szivek.length - a.szivek.length || (b.atlag ?? 0) - (a.atlag ?? 0)
     : s === "new" ? b.utolso.localeCompare(a.utolso)
+    : s === "duel" ? b.parbaj.arany - a.parbaj.arany || b.parbaj.meccs - a.parbaj.meccs
     : (b.atlag ?? -1) - (a.atlag ?? -1) || b.szivek.length - a.szivek.length);
   return lista;
 }
+
+/** „Ki hol tart": hány közös ötletet pontozott és hány párbajt döntött el mindenki. */
+function renderHaladas(lista) {
+  const idk = new Set(lista.map((o) => o.id));
+  const sorok = Object.keys(emberek).map((f) => {
+    const e = emberek[f].ertekelesek || {};
+    const pontozott = [...idk].filter((id) => pontSzam(e[id]?.pont) > 0).length;
+    const parbaj = Object.keys(emberek[f].parbajok || {}).length;
+    return { nev: nevOf(f), en: f === fajl, pontozott, parbaj };
+  }).sort((a, b) => b.pontozott - a.pontozott || a.nev.localeCompare(b.nev, "hu"));
+  $("haladas").innerHTML = lista.length
+    ? sorok.map((s) => `<span class="prog${s.pontozott === idk.size ? " done" : ""}"><b>${esc(s.nev)}${s.en ? " (te)" : ""}</b> ${s.pontozott}/${idk.size} pontozva · ${s.parbaj} párbaj</span>`).join("")
+    : "";
+}
+
+function koncepcioHtml(o) {
+  const kk = koncepcioja(o.id), k = kk?.k || {};
+  const nyitva = nyitottKartyak.has(o.id) ? " open" : "";
+  const fejlec = k.pitch ? esc(k.pitch) : "Koncepció kitöltése…";
+  const kitoltott = kk ? KONCEPCIO_MEZOK.filter(([m]) => k[m]).map(([m, cim]) => `<div class="cf"><span>${esc(cim)}</span><p>${esc(k[m])}</p></div>`).join("")
+    + (k.meret ? `<div class="cf"><span>Méret</span><p>${esc(MERETEK[k.meret])}</p></div>` : "") : "";
+  const mezok = KONCEPCIO_MEZOK.map(([m, cim, tipus, pelda]) => `<label>${esc(cim)}${tipus === "textarea"
+      ? `<textarea name="${m}" rows="2" placeholder="pl. ${esc(pelda)}">${esc(k[m] || "")}</textarea>`
+      : `<input name="${m}" placeholder="pl. ${esc(pelda)}" value="${esc(k[m] || "")}">`}</label>`).join("")
+    + `<label>Méret<select name="meret"><option value="">– válassz –</option>${Object.entries(MERETEK).map(([v, t]) => `<option value="${v}"${k.meret === v ? " selected" : ""}>${t}</option>`).join("")}</select></label>`;
+  return `<details class="concept" data-concept${nyitva}>
+      <summary><span class="concept-label">Koncepció</span> ${fejlec}${kk ? `<span class="meta"> · ${esc(kk.szerzo)}${kk.en ? " (te)" : ""}</span>` : ""}</summary>
+      ${kitoltott ? `<div class="concept-view">${kitoltott}</div>` : ""}
+      ${kitoltott ? `<details class="concept-edit" data-concept-edit${szerkesztettKartyak.has(o.id) ? " open" : ""}><summary class="chip">Szerkesztés</summary>` : ""}
+      <form class="concept-form" data-concept-form>${mezok}
+        <div class="concept-actions"><button class="spin small" type="submit">Koncepció mentése</button>
+        <span class="meta">Bárki szerkesztheti; mindig a legfrissebb változat látszik.</span></div>
+      </form>
+      ${kitoltott ? `</details>` : ""}
+    </details>`;
+}
+
 function renderKozos() {
   const ul = $("kozos");
-  if (ul.contains(document.activeElement) && document.activeElement.tagName === "TEXTAREA") return; // gépelés közben ne rajzoljuk újra
+  if (ul.contains(document.activeElement) && /^(TEXTAREA|INPUT|SELECT)$/.test(document.activeElement.tagName)) return; // gépelés közben ne rajzoljuk újra
   const lista = kozosOtletek();
   const emberSzam = Object.keys(emberek).length;
   $("kozos-count").textContent = `${lista.length} közös ötlet · ${emberSzam} játékos`;
+  renderHaladas(lista);
   ul.innerHTML = "";
   if (!lista.length) { ul.innerHTML = `<li class="empty">Még senki nem osztott meg ötletet. Pörgess, és ha tetszik, nyomd meg a ♡ gombot: az ötlet ide kerül, és a többiek is pontozhatják.</li>`; return; }
   const curId = otletId(curIdea());
@@ -293,16 +368,18 @@ function renderKozos() {
     const szavazatok = o.pontok.map((p) => `<div class="vote"><span class="n">${esc(p.nev)}${p.en ? " (te)" : ""}</span><span class="p">${p.pont ? p.pont + "/10" : "–"}</span><span class="m">${esc(p.megjegyzes)}</span></div>`).join("");
     li.innerHTML = `<div class="entry-top">
         <div class="entry-text">${htmlOf(o)}<div class="hearts">♥ ${esc(o.szivek.join(", "))}</div></div>
-        <div class="avg">${o.atlag ?? "–"}<small>${o.db ? `átlag, ${o.db} pontozó` : "még nincs pont"}</small></div>
+        <div class="avg">${o.atlag ?? "–"}<small>${o.db ? `átlag, ${o.db} pontozó` : "még nincs pont"}${o.parbaj.meccs ? `<br>párbaj: ${o.parbaj.gyozelem}/${o.parbaj.meccs}` : ""}</small></div>
       </div>
       ${szavazatok ? `<div class="votes">${szavazatok}</div>` : ""}
       <div class="entry-tools">
         <span class="stars">${starsHtml(en?.pont || 0)}</span>
         <button class="chip heart" data-act="fav" aria-pressed="${!!en?.kedvenc}">${en?.kedvenc ? "♥ Kedvencem" : "♡ Kedvelem"}</button>
         <button class="chip" data-act="load">Betöltés a gépbe</button>
+        <button class="chip" data-act="link">🔗 Link</button>
       </div>
-      <textarea data-note placeholder="A te megjegyzésed (a többiek is látják)…" aria-label="Megjegyzésed"></textarea>`;
-    li.querySelector("textarea").value = en?.megjegyzes || "";
+      <textarea data-note placeholder="A te megjegyzésed (a többiek is látják)…" aria-label="Megjegyzésed"></textarea>
+      ${koncepcioHtml(o)}`;
+    li.querySelector("[data-note]").value = en?.megjegyzes || "";
     ul.appendChild(li);
   }
 }
@@ -364,6 +441,10 @@ for (const id of ["kozos", "naplo"]) {
     const star = ev.target.closest("[data-star]");
     if (star) { const n = +star.dataset.star; ertekel(idea, { pont: (en?.pont || 0) === n ? 0 : n }); return; }
     const b = ev.target.closest("[data-act]"); if (!b) return;
+    if (b.dataset.act === "link") {
+      navigator.clipboard?.writeText(otletLink(otletId(idea))).then(() => toast("Link kimásolva — küldd el a többieknek"), () => toast("A másolás nem sikerült"));
+      return;
+    }
     if (b.dataset.act === "fav") ertekel(idea, { kedvenc: !en?.kedvenc });
     if (b.dataset.act === "load") betolt(idea);
     if (b.dataset.act === "del") {
@@ -385,8 +466,31 @@ for (const id of ["kozos", "naplo"]) {
       mentes(); renderCurrent();
     }, 400));
   });
-  $(id).addEventListener("focusout", () => setTimeout(renderAll, 0));
+  // Gépelés után rajzolunk újra, de csak késleltetve: ha azonnal tennénk, a mezőből egy gombra kattintás
+  // (pl. „Koncepció mentése") a gomb alól kirántaná a DOM-ot, és a kattintás elveszne.
+  $(id).addEventListener("focusout", () => setTimeout(() => {
+    const a = document.activeElement;
+    if (!($(id).contains(a) && /^(TEXTAREA|INPUT|SELECT)$/.test(a.tagName))) renderAll();
+  }, 400));
 }
+$("kozos").addEventListener("toggle", (ev) => {
+  const d = ev.target, id = d.closest?.(".entry")?.dataset.id; if (!id) return;
+  const halmaz = d.matches?.("[data-concept]") ? nyitottKartyak : d.matches?.("[data-concept-edit]") ? szerkesztettKartyak : null;
+  if (!halmaz) return;
+  if (d.open) halmaz.add(id); else halmaz.delete(id);
+}, true);
+$("kozos").addEventListener("submit", (ev) => {
+  if (!ev.target.matches("[data-concept-form]")) return;
+  ev.preventDefault();
+  const id = ev.target.closest(".entry").dataset.id, fd = new FormData(ev.target), adat = {};
+  for (const [m] of KONCEPCIO_MEZOK) adat[m] = String(fd.get(m) || "").trim();
+  adat.meret = MERETEK[fd.get("meret")] ? fd.get("meret") : "";
+  modosit("koncepciok", id, adat);
+  szerkesztettKartyak.delete(id);
+  document.activeElement?.blur();
+  renderAll();
+  toast("Koncepció mentve — a többiek is látják");
+});
 
 /* ---------- elemek fül ---------- */
 function renderElemek() {
@@ -406,15 +510,92 @@ $("words").addEventListener("click", (ev) => {
   renderAll(); buildReels();
 });
 
-/* ---------- fülek ---------- */
-function setTab(t) {
-  tab = t;
-  for (const x of ["kozos", "naplo", "elemek"]) { $("tab-" + x).setAttribute("aria-selected", String(x === t)); $("pane-" + x).hidden = x !== t; }
-  lsSet("otletgep:tab", t);
+/* ---------- párbaj ---------- */
+let par = null;   // [idA, idB] — az épp látott párbaj
+function ujPar() {
+  const lista = kozosOtletek(), meccs = {};
+  for (const o of lista) meccs[o.id] = o.parbaj.meccs;
+  par = kovetkezoPar(lista.map((o) => o.id), sajat().parbajok || {}, meccs);
 }
-for (const x of ["kozos", "naplo", "elemek"]) $("tab-" + x).onclick = () => setTab(x);
+function renderParbaj() {
+  const lista = kozosOtletek(), byId = new Map(lista.map((o) => [o.id, o]));
+  if (!par || !byId.has(par[0]) || !byId.has(par[1])) ujPar();
+  const sajatDb = Object.keys(sajat().parbajok || {}).length;
+  $("parbaj-count").textContent = `${sajatDb} párbajt döntöttél el · ${lista.length} közös ötlet`;
+  const arena = $("arena");
+  if (!par) { arena.innerHTML = `<p class="empty">A párbajhoz legalább két közös ötlet kell. ♥-ezz még egyet!</p>`; }
+  else {
+    arena.innerHTML = par.map((id, i) => {
+      const o = byId.get(id), k = koncepcioja(id)?.k;
+      return `<button class="duel-card" data-win="${i}"><span class="duel-text">${htmlOf(o)}</span>
+        ${k?.pitch ? `<span class="duel-pitch">${esc(k.pitch)}</span>` : ""}
+        <span class="duel-meta">♥ ${o.szivek.length} · átlag ${o.atlag ?? "–"}</span>
+        <span class="duel-cta">Ez a jobb</span></button>`;
+    }).join(`<span class="vs">VS</span>`);
+  }
+  const top = [...lista].sort((a, b) => b.parbaj.arany - a.parbaj.arany || b.parbaj.meccs - a.parbaj.meccs).slice(0, 10);
+  $("parbaj-rang").innerHTML = top.length && top.some((o) => o.parbaj.meccs)
+    ? top.map((o, i) => `<li><span class="rank">${i + 1}.</span><span class="rt">${htmlOf(o)}</span><span class="meta">${o.parbaj.gyozelem}/${o.parbaj.meccs} győzelem</span></li>`).join("")
+    : `<li class="empty">Még nincs eldöntött párbaj.</li>`;
+}
+$("arena").addEventListener("click", (ev) => {
+  const b = ev.target.closest("[data-win]"); if (!b || !par) return;
+  const [a, c] = par, gyoztes = par[+b.dataset.win];
+  modosit("parbajok", parKulcs(a, c), { a, b: c, gyoztes });
+  ujPar(); renderParbaj(); renderKozos();
+});
+$("parbaj-skip").onclick = () => { ujPar(); renderParbaj(); };
 
-function renderAll() { renderCurrent(); renderKozos(); renderNaplo(); renderElemek(); }
+/* ---------- újdonságok ---------- */
+let miota = "";          // a legutóbbi látogatás ideje (ebben a böngészőben, név szerint)
+let ujdonsagLatva = false;
+const TIPUS_SZOVEG = { elem: "új elemet adott hozzá:", kedvenc: "♥-ezte:", pont: "pontozta:", koncepcio: "koncepciót írt:" };
+function renderUjdonsag() {
+  const lista = ujdonsagLatva ? [] : ujdonsagok(emberek, fajl, miota);
+  $("news").hidden = !lista.length;
+  if (!lista.length) return;
+  $("news-title").textContent = `Újdonságok, mióta itt jártál (${lista.length})`;
+  $("news-list").innerHTML = lista.slice(0, 12).map((u) =>
+    `<li${u.otletId ? ` data-goto="${esc(u.otletId)}"` : ""}><b>${esc(u.nev)}</b> ${TIPUS_SZOVEG[u.tipus]} <span>${esc(u.szoveg)}</span></li>`).join("")
+    + (lista.length > 12 ? `<li class="meta">…és még ${lista.length - 12}</li>` : "");
+}
+$("news-list").addEventListener("click", (ev) => {
+  const id = ev.target.closest("[data-goto]")?.dataset.goto; if (id) ugrasOtletre(id);
+});
+$("news-ok").onclick = () => { ujdonsagLatva = true; lsSet(`otletgep:latogatas:${fajl}`, new Date().toISOString()); renderUjdonsag(); };
+// Ami most a képernyőn volt, azt láttad: a következő látogatáskor ehhez képest számolunk.
+window.addEventListener("pagehide", () => { if (fajl) lsSet(`otletgep:latogatas:${fajl}`, new Date().toISOString()); });
+
+/* ---------- ugrás egy ötletre (ötlet-link) ---------- */
+function ugrasOtletre(id) {
+  setTab("kozos");
+  nyitottKartyak.add(id);
+  renderKozos();
+  const li = [...$("kozos").children].find((x) => x.dataset.id === id);
+  if (!li) { toast("Ez az ötlet már nincs a közös listában"); return; }
+  li.classList.add("flash");
+  li.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
+  setTimeout(() => li.classList.remove("flash"), 2500);
+}
+const celOtlet = new URLSearchParams(location.search).get("otlet");
+function celOtletKezel() {
+  if (!celOtlet) return;
+  const u = new URL(location.href); u.searchParams.delete("otlet"); history.replaceState(null, "", u);
+  ugrasOtletre(celOtlet);
+}
+
+/* ---------- fülek ---------- */
+const FULEK = ["kozos", "parbaj", "naplo", "elemek"];
+function setTab(t) {
+  if (!FULEK.includes(t)) t = "kozos";
+  tab = t;
+  for (const x of FULEK) { $("tab-" + x).setAttribute("aria-selected", String(x === t)); $("pane-" + x).hidden = x !== t; }
+  lsSet("otletgep:tab", t);
+  if (t === "parbaj") renderParbaj();
+}
+for (const x of FULEK) $("tab-" + x).onclick = () => setTab(x);
+
+function renderAll() { renderCurrent(); renderUjdonsag(); renderKozos(); renderNaplo(); renderElemek(); if (tab === "parbaj") renderParbaj(); }
 
 /* ---------- egyéb vezérlők ---------- */
 let tt;
@@ -474,4 +655,5 @@ setInterval(() => { if (!document.hidden) frissit(); }, 60000);
   if (!(BEALLIT.darabok || []).length) { setStatus("Nincs beállítva a mentés (token); minden csak helyben marad", "bad"); return; }
   await frissit();
   buildReels();
+  celOtletKezel();
 })();

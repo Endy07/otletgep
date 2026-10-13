@@ -4,6 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Képtelen szereplők, komoly feladat, rossz helyszín. Pörgess, ♥-ezd a jó ötleteket, és pontozzuk együtt a következő játékunkat!">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Lehetetlen Helyzet Gép">
+<meta property="og:title" content="Lehetetlen Helyzet Gép — melyik legyen a következő játékunk?">
+<meta property="og:description" content="Három majom bombát hatástalanít egy furgonban. Pörgess, ♥-ezd a jó ötleteket, és pontozzuk együtt!">
+<meta property="og:url" content="https://endy07.github.io/otletgep/">
+<meta property="og:image" content="https://endy07.github.io/otletgep/elonezet.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="hu_HU">
+<meta name="twitter:card" content="summary_large_image">
 <title>Lehetetlen Helyzet Gép</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23FF4D2E'/%3E%3Ctext x='50' y='72' font-size='64' text-anchor='middle' fill='%23FFC233'%3E%E2%98%85%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -124,6 +135,51 @@ section{display:grid;gap:12px}
 .overlay h2{font-family:var(--display);font-weight:400;margin:0}
 .overlay input{background:var(--bg);color:var(--ink);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-size:18px}
 .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:999px;font-weight:600;z-index:20}
+.spin.small{font-size:15px;padding:8px 18px;box-shadow:0 3px 0 #B98500}
+
+.news{background:var(--reel);border-radius:14px;padding:12px 16px;display:grid;gap:8px;border:2px solid var(--banana)}
+.news-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.news-head h2{font-family:var(--display);font-weight:400;font-size:17px;margin:0}
+.news ul{list-style:none;margin:0;padding:0;display:grid;gap:4px;font-size:15px}
+.news li span{color:var(--muted)}
+.news li[data-goto]{cursor:pointer}
+.news li[data-goto]:hover span{color:var(--machine);text-decoration:underline}
+
+.progress{display:flex;flex-wrap:wrap;gap:6px}
+.prog{font-size:13px;border:1.5px solid var(--line);border-radius:999px;padding:3px 10px;color:var(--muted);font-variant-numeric:tabular-nums}
+.prog b{color:var(--ink)}
+.prog.done{border-color:var(--ok)}
+
+.entry.flash{outline:4px solid var(--banana);outline-offset:2px}
+.concept{border-top:1.5px dashed var(--line);padding-top:8px}
+.concept summary{cursor:pointer;font-weight:600;list-style-position:inside}
+.concept-label{font-family:var(--display);font-size:12px;letter-spacing:.06em;color:var(--machine);margin-right:4px}
+.concept-view{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px 16px;margin-block:10px}
+.cf span{display:block;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.cf p{margin:0;overflow-wrap:anywhere}
+.concept-form{display:grid;gap:8px;margin-top:10px}
+.concept-form label{display:grid;gap:3px;font-size:13px;font-weight:700;color:var(--muted)}
+.concept-form input,.concept-form textarea,.concept-form select{background:var(--bg);color:var(--ink);border:1.5px solid var(--line);border-radius:10px;padding:6px 10px;font-weight:400;font-size:15px;min-width:0}
+.concept-edit > summary{display:inline-block;list-style:none;cursor:pointer}
+.concept-edit > summary::-webkit-details-marker{display:none}
+.concept-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+
+.arena{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:12px;align-items:stretch}
+@media (max-width:640px){.arena{grid-template-columns:1fr}}
+.duel-card{background:var(--reel);color:var(--ink);border-radius:18px;padding:18px;display:grid;gap:8px;text-align:left;border:3px solid transparent;font-size:17px;align-content:start}
+.duel-card:hover{border-color:var(--machine)}
+.duel-text{font-weight:600}
+.duel-text b{color:var(--machine)}
+.duel-pitch{font-style:italic;color:var(--muted)}
+.duel-meta{font-size:13px;color:var(--muted)}
+.duel-cta{justify-self:start;font-family:var(--display);font-size:14px;background:var(--banana);color:#1B1830;border-radius:999px;padding:6px 14px;margin-top:4px}
+.vs{font-family:var(--display);font-size:24px;color:var(--machine);align-self:center;text-align:center}
+.rank-list{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.rank-list li{display:flex;gap:10px;align-items:baseline;background:var(--reel);border-radius:10px;padding:8px 12px}
+.rank-list .rank{font-family:var(--display);color:var(--machine);min-width:2em}
+.rank-list .rt{flex:1;min-width:0;overflow-wrap:anywhere}
+.rank-list .rt b{color:var(--machine)}
+h3{font-family:var(--display);font-weight:400;font-size:17px;margin:8px 0 0}
 [hidden]{display:none!important}
 @media (prefers-reduced-motion:reduce){.value.spinning{filter:none}}
 </style>
@@ -160,8 +216,14 @@ section{display:grid;gap:12px}
     <span class="hint">Szóköz: pörgetés · a ♥ megosztja az ötletet a többiekkel · a pontod és a megjegyzésed a többiek is látják a közös ötleteknél</span>
   </div>
 
+  <section class="news" id="news" hidden aria-live="polite">
+    <div class="news-head"><h2 id="news-title">Újdonságok</h2><button class="chip" id="news-ok">Láttam</button></div>
+    <ul id="news-list"></ul>
+  </section>
+
   <div class="tabs" role="tablist">
     <button class="tab" role="tab" id="tab-kozos" aria-selected="true">Közös ötletek</button>
+    <button class="tab" role="tab" id="tab-parbaj" aria-selected="false">Párbaj</button>
     <button class="tab" role="tab" id="tab-naplo" aria-selected="false">Saját napló</button>
     <button class="tab" role="tab" id="tab-elemek" aria-selected="false">Elemek</button>
   </div>
@@ -174,11 +236,24 @@ section{display:grid;gap:12px}
           <option value="avg">Legjobb átlag elöl</option>
           <option value="hearts">Legtöbb ♥ elöl</option>
           <option value="new">Legújabb elöl</option>
+          <option value="duel">Párbaj-rangsor szerint</option>
         </select>
         <button class="chip" id="refresh">Frissítés</button>
       </div>
     </div>
+    <div class="progress" id="haladas" aria-label="Ki hol tart"></div>
     <ul class="list" id="kozos"></ul>
+  </section>
+
+  <section id="pane-parbaj" hidden>
+    <div class="bar">
+      <span class="muted" id="parbaj-count"></span>
+      <button class="chip" id="parbaj-skip">Másik pár</button>
+    </div>
+    <p class="lede">Melyik a jobb játékötlet? Kattints rá. Mindenki párbajaiból közös rangsor lesz.</p>
+    <div class="arena" id="arena"></div>
+    <h3>Párbaj-rangsor</h3>
+    <ol class="rank-list" id="parbaj-rang"></ol>
   </section>
 
   <section id="pane-naplo" hidden>

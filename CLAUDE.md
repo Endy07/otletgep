@@ -25,8 +25,18 @@ A teljes háttér, a döntések indoklása és a hibamentes újraépítés a sz�
 { "nev": "Peti",
   "szavak":      { "<id>": { "oszlop": "kik|mit|hol|csavar", "szoveg": "…", "torolve": false, "modositva": "ISO" } },
   "ertekelesek": { "<otletId>": { "kik": "…", "mit": "…", "hol": "…", "csavar": "…|null",
-                                  "kedvenc": true, "pont": 0, "megjegyzes": "", "modositva": "ISO" } } }
+                                  "kedvenc": true, "pont": 0, "megjegyzes": "", "modositva": "ISO" } },
+  "koncepciok":  { "<otletId>": { "pitch": "…", "ige": "…", "klip": "…", "helyszin": "…", "meret": "S|M|L",
+                                  "bge": "…", "modositva": "ISO" } },
+  "parbajok":    { "<idA>|<idB>": { "a": "<id>", "b": "<id>", "gyoztes": "<id>", "modositva": "ISO" } } }
 ```
+- **Koncepciókártya**: bárki szerkesztheti; mindenki fájljából a legfrissebb `modositva` látszik, szerzővel.
+- **Párbaj**: pár-kulcs rendezett (`parKulcs`); rangsor = (győzelem+1)/(meccs+2) mindenki párbajaiból (`parbaj.js`).
+- **Újdonságok**: mások bejegyzései a `localStorage: otletgep:latogatas:<fájl>` óta (`ujdonsag.js`); első
+  látogatáskor nincs újdonság; a lap elhagyásakor frissül az időbélyeg.
+- **Ötlet-link**: `?otlet=<otletId>` → Közös fül, odagörget, kinyitja a kártyát, majd törli a paramétert.
+- **Linkelőnézet**: `og:*` meta + `elonezet.png` (forrás: `eszkozok/elonezet.html`, 1200×630). Statikus oldalon
+  minden linknek ugyanaz az előnézete; a Messenger gyorsítótáraz, változás után napokig a régit mutathatja.
 - Közös ötlet = amit legalább egy ember ♥-ezett (`kedvenc: true`). A szöveg az értékelésben utazik.
 - Egy embernek ötletenként egy értékelése van; a napló és a közös lista ugyanazt mutatja.
 - Törlés: `torolve: true` (különben az összefésülés visszahozná).
@@ -40,4 +50,7 @@ A teljes háttér, a döntések indoklása és a hibamentes újraépítés a sz�
 3. A tároló szabályait (`tarolo.js` fejléce) ne lazítsd: helyi tár előbb; hálózati hiba nem dob; a hálózati kör
    UTÁN a friss helyi állapotot fésüld; „nem sikerült" ≠ „üres".
 4. A token csak ennek a repónak a Contents jogát kaphatja. Csere: új token → publikálás → ellenőrzés → régi visszavonása.
-5. Teszt után az `adat/teszt-*.json` fájlokat töröld.
+5. Teszt után az `adat/teszt-*.json` fájlokat töröld — de előbb hagyd el a lapot és töröld a helyi tárat
+   (`otletgep:*`), különben a nyitott lap visszatölti őket. A localhost-változat is az éles repóba ír.
+6. Gépelés közben ne rajzold újra a listát (`renderKozos` kihagyja, ha input/textarea/select fókuszban van), és a
+   `focusout` utáni újrarajzolás késleltetett (400 ms) — különben a mezőből egy gombra kattintás elveszik.
