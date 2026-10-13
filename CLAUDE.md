@@ -44,7 +44,8 @@ A teljes háttér, a döntések indoklása és a hibamentes újraépítés a sz�
 
 ## Szabályok
 
-1. **Push előtt `git pull --rebase`** — a böngészők közvetlenül commitolnak ide.
+1. **Commit → `git pull --rebase` → push** — a böngészők közvetlenül commitolnak ide, és a rebase nem commitolt
+   változásokkal megtagad.
 2. **Más fájljából jövő adat megbízhatatlan**: HTML-be csak `esc()`-en át; pont csak `pontSzam()`-on át;
    szöveg csak `typeof === "string"` után. Új mező = új szűrés + próba `<img onerror>` adattal.
 3. A tároló szabályait (`tarolo.js` fejléce) ne lazítsd: helyi tár előbb; hálózati hiba nem dob; a hálózati kör
