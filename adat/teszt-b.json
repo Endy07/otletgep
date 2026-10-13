@@ -2,6 +2,16 @@
   "nev": "Teszt B",
   "szavak": {},
   "ertekelesek": {},
-  "koncepciok": {},
+  "koncepciok": {
+    "ob875f9b0": {
+      "pitch": "B átírta a pitchet",
+      "ige": "kiabál",
+      "klip": "Felrobban a furgon",
+      "helyszin": "furgon",
+      "bge": "Photon Voice",
+      "meret": "S",
+      "modositva": "2026-10-13T00:14:47.679Z"
+    }
+  },
   "parbajok": {}
 }
