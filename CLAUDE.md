@@ -55,3 +55,11 @@ A teljes háttér, a döntések indoklása és a hibamentes újraépítés a sz�
    (`otletgep:*`), különben a nyitott lap visszatölti őket. A localhost-változat is az éles repóba ír.
 6. Gépelés közben ne rajzold újra a listát (`renderKozos` kihagyja, ha input/textarea/select fókuszban van), és a
    `focusout` utáni újrarajzolás késleltetett (400 ms) — különben a mezőből egy gombra kattintás elveszik.
+   Az Elemek fül (`renderElemek`) ugyanígy kihagyja, ha az űrlap mezője fókuszban van és nem üres.
+7. **Mobilnézet** (≤640 px, egyetlen `@media` blokk az `index.html` végén): a gépház egy képernyő (2×2 kártya,
+   alul csillagok + ♡ · Pörgetés · Csavar), a fejléc a lap aljára kerül (`order:99`), a megjegyzés, Másolás, súgó
+   és a tárcsák alatti mondat rejtve. Gombokban a szöveg `<span class="txt">` (mobilon rejtve) + `aria-label`.
+   Saját elem: `addFormHtml(k)` + `elemHozzaad` — a tárcsán (asztali) és az Elemek fülön (mindig). Új vezérlő a
+   gépházba csak úgy, hogy 360×640-en is kiférjen. Részletek: `../docs/runbook-kozos-github-oldal.md` 10. pont.
+8. **Felület-próba élesírás nélkül**: Playwrightban `context.route(/api\.github\.com/, r => r.abort())`, a végén
+   `localStorage.clear()` (runbook 7/6.).
