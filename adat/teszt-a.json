@@ -1,7 +1,17 @@
 {
   "nev": "Teszt A",
   "szavak": {},
-  "ertekelesek": {},
+  "ertekelesek": {
+    "ob875f9b0": {
+      "kik": "Mosómedvék",
+      "mit": "rakétát indítanak",
+      "hol": "egy bevásárlókocsiban",
+      "csavar": null,
+      "pont": 9,
+      "modositva": "2026-10-13T00:13:46.019Z",
+      "kedvenc": true
+    }
+  },
   "koncepciok": {},
   "parbajok": {}
 }
