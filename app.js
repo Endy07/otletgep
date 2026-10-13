@@ -643,7 +643,7 @@ $("refresh").onclick = async () => { await frissit(); toast("Frissítve"); };
 ["q", "filter", "sort"].forEach((id) => $(id).addEventListener("input", () => { shown = PAGE; renderNaplo(); }));
 $("more").onclick = () => { shown += PAGE; renderNaplo(); };
 $("export").onclick = () => {
-  const adat = naplo.map((n) => { const e = enErtekelesem(otletId(n)) || {}; return { ...n, pont: e.pont || 0, megjegyzes: e.megjegyzes || "", kedvenc: !!e.kedvenc }; });
+  const adat = naplo.map((n) => { const e = enErtekelesem(otletId(n)) || {}; return { ...n, pont: e.pont || 0, megjegyzes: e.megjegyzes || "", kedvenc: !!e.kedvenc, nehez: nehezSzam(e.nehez), idoHet: idoSzam(e.ido) }; });
   const blob = new Blob([JSON.stringify(adat, null, 2)], { type: "application/json" });
   const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
   a.download = `otletgep-${nev}-${new Date().toISOString().slice(0, 10)}.json`; a.click();
@@ -660,8 +660,8 @@ $("import").onchange = async (ev) => {
     if (!e?.kik || !e?.mit || !e?.hol) continue;
     const idea = { kik: e.kik, mit: e.mit, hol: e.hol, csavar: e.csavar || null };
     naplo.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), ido: e.ido || new Date().toISOString(), ...idea });
-    if (e.pont || (e.megjegyzes || "").trim() || e.kedvenc) {
-      emberek[fajl] = osszefesul(tarolo.modosit(fajl, "ertekelesek", otletId(idea), { ...idea, pont: e.pont || 0, megjegyzes: e.megjegyzes || "", kedvenc: !!e.kedvenc }), {});
+    if (e.pont || (e.megjegyzes || "").trim() || e.kedvenc || nehezSzam(e.nehez) || idoSzam(e.idoHet)) {
+      emberek[fajl] = osszefesul(tarolo.modosit(fajl, "ertekelesek", otletId(idea), { ...idea, pont: pontSzam(e.pont), megjegyzes: e.megjegyzes || "", kedvenc: !!e.kedvenc, nehez: nehezSzam(e.nehez), ido: idoSzam(e.idoHet) }), {});
     }
     db++;
   }

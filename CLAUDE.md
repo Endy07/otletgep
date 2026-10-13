@@ -42,6 +42,8 @@ A teljes háttér, a döntések indoklása és a hibamentes újraépítés a sz�
 - **Becslés**: `nehez` 1–5, `ido` hetekben csak a `IDOK` értékei (1, 2, 4, 8, 13, 26, 52); 0 = nincs becslés.
   Közös lista: nehézség átlag, idő medián a legközelebbi fokozatra kerekítve. „Gyors és jó" rendezés:
   átlagpont ÷ log2(idő+1). A koncepciókártya „Méret S/M/L" mezője ettől független, egy közös szöveges címke.
+- ⚠️ A böngésző-naplóban (`otletgep:naplo:*`) és a helyi Ötletgépben az `ido` a pörgetés IDŐPONTJA; ott a becsült
+  idő `idoHet`. Az Exportálás/Importálás ezt fordítja (`ertekelesek.ido` ↔ `idoHet`).
 - Közös ötlet = amit legalább egy ember ♥-ezett (`kedvenc: true`). A szöveg az értékelésben utazik.
 - Egy embernek ötletenként egy értékelése van; a napló és a közös lista ugyanazt mutatja.
 - Törlés: `torolve: true` (különben az összefésülés visszahozná).
