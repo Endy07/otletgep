@@ -336,6 +336,8 @@ function kozosOtletek() {
 /** „Gyors és jó": az átlagpont az idő logaritmusával osztva (1 hét → ÷1, 2 hónap → ÷3,2, 1 év → ÷5,7).
     Pont vagy időbecslés nélkül a lista végére kerül. */
 const ertekIdore = (o) => (o.atlag && o.becsles.ido ? o.atlag / Math.log2(o.becsles.ido + 1) : -1);
+// Mobilon a gépházban rövid felirat kell, hogy a 7 időfokozat egy sorba férjen.
+const IDO_ROVID = { 1: "1 hét", 2: "2 hét", 4: "1 hó", 8: "2 hó", 13: "3 hó", 26: "½ év", 52: "1 év+" };
 const becslesSzoveg = (b) => [b.nehez ? `nehézség ${b.nehez}/5` : "", b.ido ? `~${IDOK[b.ido]}` : ""].filter(Boolean).join(" · ");
 function becslesHtml(en) {
   const n = nehezSzam(en?.nehez), i = idoSzam(en?.ido);
@@ -343,7 +345,7 @@ function becslesHtml(en) {
       <span class="est-label">Nehézség</span><span class="est-chips">${Object.entries(NEHEZSEGEK).map(([v, t]) =>
         `<button class="chip est" data-nehez="${v}" aria-pressed="${n === +v}" title="${t}" aria-label="Nehézség: ${v} – ${t}">${v}</button>`).join("")}</span>
       <span class="est-label">Idő</span><span class="est-chips">${Object.entries(IDOK).map(([v, t]) =>
-        `<button class="chip est" data-ido="${v}" aria-pressed="${i === +v}" aria-label="Idő: ${t}">${t}</button>`).join("")}</span>
+        `<button class="chip est" data-ido="${v}" aria-pressed="${i === +v}" aria-label="Idő: ${t}"><span class="hosszu">${t}</span><span class="rovid">${IDO_ROVID[v]}</span></button>`).join("")}</span>
     </div>`;
 }
 

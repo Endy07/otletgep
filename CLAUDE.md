@@ -64,7 +64,7 @@ A teljes háttér, a döntések indoklása és a hibamentes újraépítés a sz�
    `focusout` utáni újrarajzolás késleltetett (400 ms) — különben a mezőből egy gombra kattintás elveszik.
    Az Elemek fül (`renderElemek`) ugyanígy kihagyja, ha az űrlap mezője fókuszban van és nem üres.
 7. **Mobilnézet** (≤640 px, egyetlen `@media` blokk az `index.html` végén): a gépház egy képernyő (2×2 kártya,
-   alul csillagok + ♡ · Pörgetés · Csavar), a fejléc a lap aljára kerül (`order:99`), a megjegyzés, Másolás, súgó
+   alul csillagok, becslés-sor rövid időfeliratokkal (`IDO_ROVID`), ♡ · Pörgetés · Csavar), a fejléc a lap aljára kerül (`order:99`), a megjegyzés, Másolás, súgó
    és a tárcsák alatti mondat rejtve. Gombokban a szöveg `<span class="txt">` (mobilon rejtve) + `aria-label`.
    Saját elem: `addFormHtml(k)` + `elemHozzaad` — a tárcsán (asztali) és az Elemek fülön (mindig). Új vezérlő a
    gépházba csak úgy, hogy 360×640-en is kiférjen. Részletek: `../docs/runbook-kozos-github-oldal.md` 10. pont.

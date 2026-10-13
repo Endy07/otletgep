@@ -122,6 +122,7 @@ section{display:grid;gap:12px}
 .est-label{font-size:13px;font-weight:700;color:var(--muted)}
 .est-chips{display:flex;flex-wrap:wrap;gap:4px}
 .chip.est{padding:3px 10px;font-variant-numeric:tabular-nums}
+.chip.est .rovid{display:none}
 .votes{display:grid;gap:4px;font-size:14px}
 .vote{display:flex;gap:10px;align-items:baseline}
 .vote .n{font-weight:800;min-width:7em}
@@ -203,7 +204,14 @@ h3{font-family:var(--display);font-weight:400;font-size:17px;margin:8px 0 0}
   .reel .value{font-size:clamp(18px,5.2vw,30px);line-height:1.15;hyphens:auto;overflow-wrap:break-word}
   .reel .reel-actions{justify-content:flex-end;gap:6px;flex-wrap:nowrap}
   .reel .reel-actions .chip{font-size:17px;padding:4px 8px;line-height:1.2}
-  .reel .add,.txt,#copy,.hint,#cur-note,#pitch,#cur-est{display:none}
+  .reel .add,.txt,#copy,.hint,#cur-note,#pitch{display:none}
+  .pitch{gap:6px}
+  #cur-est .estimate{gap:4px 6px}
+  #cur-est .est-label{font-size:11px}
+  #cur-est .est-chips{flex-wrap:nowrap;gap:3px}
+  #cur-est .chip.est{flex:1;min-width:0;padding:4px 0;font-size:12px;white-space:nowrap}
+  #cur-est .chip.est .hosszu{display:none}
+  #cur-est .chip.est .rovid{display:inline}
   .pitch{padding:8px 10px}
   .rate-row{flex-wrap:nowrap}
   #cur-stars{display:flex;flex-wrap:nowrap;width:100%}
@@ -336,6 +344,6 @@ h3{font-family:var(--display);font-weight:400;font-size:17px;margin:8px 0 0}
 </div>
 <div class="toast" id="toast" hidden></div>
 
-<script type="module" src="app.js?v=2026-10-14"></script>
+<script type="module" src="app.js?v=2026-10-14b"></script>
 </body>
 </html>
