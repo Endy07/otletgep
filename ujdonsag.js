@@ -24,6 +24,7 @@ export function ujdonsagok(emberek, sajatFajl, miota) {
       const cim = `${str(e.kik)} ${str(e.mit)} ${str(e.hol)}`;
       if (e.kedvenc === true) out.push({ ido, nev, tipus: "kedvenc", szoveg: cim, otletId: id });
       else if (Number(e.pont) > 0 || str(e.megjegyzes).trim()) out.push({ ido, nev, tipus: "pont", szoveg: cim, otletId: id });
+      else if (Number(e.nehez) > 0 || Number(e.ido) > 0) out.push({ ido, nev, tipus: "becsles", szoveg: cim, otletId: id });
     }
     for (const [id, k] of Object.entries(d.koncepciok || {})) {
       const ido = str(k?.modositva);

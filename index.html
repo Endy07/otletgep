@@ -117,6 +117,11 @@ section{display:grid;gap:12px}
 .avg{font-family:var(--display);font-size:22px;color:var(--machine);font-variant-numeric:tabular-nums;min-width:3.5em;text-align:right}
 .avg small{font-family:var(--body);font-size:12px;color:var(--muted);display:block;font-weight:600}
 .hearts{color:var(--heart);font-weight:700;font-size:14px}
+.avg .est-sum{margin-top:4px;color:var(--ink)}
+.estimate{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 10px;align-items:center}
+.est-label{font-size:13px;font-weight:700;color:var(--muted)}
+.est-chips{display:flex;flex-wrap:wrap;gap:4px}
+.chip.est{padding:3px 10px;font-variant-numeric:tabular-nums}
 .votes{display:grid;gap:4px;font-size:14px}
 .vote{display:flex;gap:10px;align-items:baseline}
 .vote .n{font-weight:800;min-width:7em}
@@ -267,6 +272,9 @@ h3{font-family:var(--display);font-weight:400;font-size:17px;margin:8px 0 0}
           <option value="hearts">Legtöbb ♥ elöl</option>
           <option value="new">Legújabb elöl</option>
           <option value="duel">Párbaj-rangsor szerint</option>
+          <option value="value">Gyors és jó elöl (pont ÷ idő)</option>
+          <option value="fast">Leggyorsabb elöl</option>
+          <option value="easy">Legkönnyebb elöl</option>
         </select>
         <button class="chip" id="refresh">Frissítés</button>
       </div>

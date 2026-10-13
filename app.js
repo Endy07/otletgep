@@ -3,6 +3,7 @@ import { keszitTarolo, fajlnevNevbol, osszefesul } from "./tarolo.js";
 import { BEALLIT } from "./beallit.js";
 import { parKulcs, kovetkezoPar, rangsor } from "./parbaj.js";
 import { ujdonsagok } from "./ujdonsag.js";
+import { NEHEZSEGEK, IDOK, nehezSzam, idoSzam, osszesit } from "./becsles.js";
 
 const KEYS = ["kik", "mit", "hol", "csavar"];
 const LABELS = { kik: "Kik?", mit: "Mit csinálnak?", hol: "Hol?", csavar: "Csavar" };
@@ -300,7 +301,8 @@ function kozosOtletek() {
       const modositva = String(e.modositva || "");
       if (e.kedvenc === true) { o.szivek.push(String(nevOf(f))); if (modositva > o.utolso) o.utolso = modositva; }
       const pont = pontSzam(e.pont), megjegyzes = typeof e.megjegyzes === "string" ? e.megjegyzes : "";
-      if (pont > 0 || megjegyzes.trim()) o.pontok.push({ nev: String(nevOf(f)), pont, megjegyzes, en: f === fajl });
+      const nehez = nehezSzam(e.nehez), ido = idoSzam(e.ido);
+      if (pont > 0 || megjegyzes.trim() || nehez || ido) o.pontok.push({ nev: String(nevOf(f)), pont, megjegyzes, nehez, ido, en: f === fajl });
     }
   }
   const lista = [...map.values()].filter((o) => o.szivek.length);
@@ -308,6 +310,7 @@ function kozosOtletek() {
     const p = o.pontok.filter((x) => x.pont > 0).map((x) => x.pont);
     o.atlag = p.length ? Math.round((p.reduce((a, b) => a + b, 0) / p.length) * 10) / 10 : null;
     o.db = p.length;
+    o.becsles = osszesit(o.pontok);
   }
   const r = rangsor(Object.values(emberek).map((d) => d.parbajok), lista.map((o) => o.id));
   for (const o of lista) o.parbaj = r[o.id];
@@ -316,8 +319,25 @@ function kozosOtletek() {
     s === "hearts" ? b.szivek.length - a.szivek.length || (b.atlag ?? 0) - (a.atlag ?? 0)
     : s === "new" ? b.utolso.localeCompare(a.utolso)
     : s === "duel" ? b.parbaj.arany - a.parbaj.arany || b.parbaj.meccs - a.parbaj.meccs
+    : s === "easy" ? (a.becsles.nehez ?? 99) - (b.becsles.nehez ?? 99) || (b.atlag ?? -1) - (a.atlag ?? -1)
+    : s === "fast" ? (a.becsles.ido ?? 999) - (b.becsles.ido ?? 999) || (b.atlag ?? -1) - (a.atlag ?? -1)
+    : s === "value" ? ertekIdore(b) - ertekIdore(a) || (b.atlag ?? -1) - (a.atlag ?? -1)
     : (b.atlag ?? -1) - (a.atlag ?? -1) || b.szivek.length - a.szivek.length);
   return lista;
+}
+
+/** „Gyors és jó": az átlagpont az idő logaritmusával osztva (1 hét → ÷1, 2 hónap → ÷3,2, 1 év → ÷5,7).
+    Pont vagy időbecslés nélkül a lista végére kerül. */
+const ertekIdore = (o) => (o.atlag && o.becsles.ido ? o.atlag / Math.log2(o.becsles.ido + 1) : -1);
+const becslesSzoveg = (b) => [b.nehez ? `nehézség ${b.nehez}/5` : "", b.ido ? `~${IDOK[b.ido]}` : ""].filter(Boolean).join(" · ");
+function becslesHtml(en) {
+  const n = nehezSzam(en?.nehez), i = idoSzam(en?.ido);
+  return `<div class="estimate">
+      <span class="est-label">Nehézség</span><span class="est-chips">${Object.entries(NEHEZSEGEK).map(([v, t]) =>
+        `<button class="chip est" data-nehez="${v}" aria-pressed="${n === +v}" title="${t}" aria-label="Nehézség: ${v} – ${t}">${v}</button>`).join("")}</span>
+      <span class="est-label">Idő</span><span class="est-chips">${Object.entries(IDOK).map(([v, t]) =>
+        `<button class="chip est" data-ido="${v}" aria-pressed="${i === +v}" aria-label="Idő: ${t}">${t}</button>`).join("")}</span>
+    </div>`;
 }
 
 /** „Ki hol tart": hány közös ötletet pontozott és hány párbajt döntött el mindenki. */
@@ -326,11 +346,12 @@ function renderHaladas(lista) {
   const sorok = Object.keys(emberek).map((f) => {
     const e = emberek[f].ertekelesek || {};
     const pontozott = [...idk].filter((id) => pontSzam(e[id]?.pont) > 0).length;
+    const becsult = [...idk].filter((id) => nehezSzam(e[id]?.nehez) && idoSzam(e[id]?.ido)).length;
     const parbaj = Object.keys(emberek[f].parbajok || {}).length;
-    return { nev: nevOf(f), en: f === fajl, pontozott, parbaj };
+    return { nev: nevOf(f), en: f === fajl, pontozott, becsult, parbaj };
   }).sort((a, b) => b.pontozott - a.pontozott || a.nev.localeCompare(b.nev, "hu"));
   $("haladas").innerHTML = lista.length
-    ? sorok.map((s) => `<span class="prog${s.pontozott === idk.size ? " done" : ""}"><b>${esc(s.nev)}${s.en ? " (te)" : ""}</b> ${s.pontozott}/${idk.size} pontozva · ${s.parbaj} párbaj</span>`).join("")
+    ? sorok.map((s) => `<span class="prog${s.pontozott === idk.size ? " done" : ""}"><b>${esc(s.nev)}${s.en ? " (te)" : ""}</b> ${s.pontozott}/${idk.size} pontozva · ${s.becsult}/${idk.size} becsülve · ${s.parbaj} párbaj</span>`).join("")
     : "";
 }
 
@@ -371,10 +392,10 @@ function renderKozos() {
     const li = document.createElement("li");
     li.className = "entry" + (o.id === curId ? " current" : "");
     li.dataset.id = o.id;
-    const szavazatok = o.pontok.map((p) => `<div class="vote"><span class="n">${esc(p.nev)}${p.en ? " (te)" : ""}</span><span class="p">${p.pont ? p.pont + "/10" : "–"}</span><span class="m">${esc(p.megjegyzes)}</span></div>`).join("");
+    const szavazatok = o.pontok.map((p) => `<div class="vote"><span class="n">${esc(p.nev)}${p.en ? " (te)" : ""}</span><span class="p">${p.pont ? p.pont + "/10" : "–"}</span><span class="m">${[becslesSzoveg(p), esc(p.megjegyzes)].filter(Boolean).join(" · ")}</span></div>`).join("");
     li.innerHTML = `<div class="entry-top">
         <div class="entry-text">${htmlOf(o)}<div class="hearts">♥ ${esc(o.szivek.join(", "))}</div></div>
-        <div class="avg">${o.atlag ?? "–"}<small>${o.db ? `átlag, ${o.db} pontozó` : "még nincs pont"}${o.parbaj.meccs ? `<br>párbaj: ${o.parbaj.gyozelem}/${o.parbaj.meccs}` : ""}</small></div>
+        <div class="avg">${o.atlag ?? "–"}<small>${o.db ? `átlag, ${o.db} pontozó` : "még nincs pont"}${o.parbaj.meccs ? `<br>párbaj: ${o.parbaj.gyozelem}/${o.parbaj.meccs}` : ""}</small>${becslesSzoveg(o.becsles) ? `<small class="est-sum">${becslesSzoveg(o.becsles)}<br>${Math.max(o.becsles.nehezDb, o.becsles.idoDb)} becslő</small>` : ""}</div>
       </div>
       ${szavazatok ? `<div class="votes">${szavazatok}</div>` : ""}
       <div class="entry-tools">
@@ -383,6 +404,7 @@ function renderKozos() {
         <button class="chip" data-act="load">Betöltés a gépbe</button>
         <button class="chip" data-act="link">🔗 Link</button>
       </div>
+      ${becslesHtml(en)}
       <textarea data-note placeholder="A te megjegyzésed (a többiek is látják)…" aria-label="Megjegyzésed"></textarea>
       ${koncepcioHtml(o)}`;
     li.querySelector("[data-note]").value = en?.megjegyzes || "";
@@ -446,6 +468,10 @@ for (const id of ["kozos", "naplo"]) {
     const en = enErtekelesem(otletId(idea));
     const star = ev.target.closest("[data-star]");
     if (star) { const n = +star.dataset.star; ertekel(idea, { pont: (en?.pont || 0) === n ? 0 : n }); return; }
+    const nb = ev.target.closest("[data-nehez]");
+    if (nb) { const n = +nb.dataset.nehez; ertekel(idea, { nehez: nehezSzam(en?.nehez) === n ? 0 : n }); return; }
+    const ib = ev.target.closest("[data-ido]");
+    if (ib) { const n = +ib.dataset.ido; ertekel(idea, { ido: idoSzam(en?.ido) === n ? 0 : n }); return; }
     const b = ev.target.closest("[data-act]"); if (!b) return;
     if (b.dataset.act === "link") {
       navigator.clipboard?.writeText(otletLink(otletId(idea))).then(() => toast("Link kimásolva — küldd el a többieknek"), () => toast("A másolás nem sikerült"));
@@ -557,7 +583,7 @@ $("parbaj-skip").onclick = () => { ujPar(); renderParbaj(); };
 /* ---------- újdonságok ---------- */
 let miota = "";          // a legutóbbi látogatás ideje (ebben a böngészőben, név szerint)
 let ujdonsagLatva = false;
-const TIPUS_SZOVEG = { elem: "új elemet adott hozzá:", kedvenc: "♥-ezte:", pont: "pontozta:", koncepcio: "koncepciót írt:" };
+const TIPUS_SZOVEG = { elem: "új elemet adott hozzá:", kedvenc: "♥-ezte:", pont: "pontozta:", becsles: "megbecsülte (idő, nehézség):", koncepcio: "koncepciót írt:" };
 function renderUjdonsag() {
   const lista = ujdonsagLatva ? [] : ujdonsagok(emberek, fajl, miota);
   $("news").hidden = !lista.length;

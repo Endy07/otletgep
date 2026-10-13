@@ -14,6 +14,7 @@ A teljes háttér, a döntések indoklása és a hibamentes újraépítés a sz�
 | `index.html` | Felület + stílus (témafüggő tokenek, világos/sötét) |
 | `app.js` | Logika: tárcsák, saját elemek, ♥/pont/megjegyzés, közös lista, napló, import/export |
 | `tarolo.js` | GitHub-tároló (a Hermes Studio mintájára): helyi tár → hálózat, összefésülés, 409-kezelés |
+| `becsles.js` | Nehézség (1–5) és idő (1 hét … 1 év+) szűrése és összesítése (átlag / medián) |
 | `szavak.js` | Beépített tárcsa-elemek + `otletId()` (tartalom-hash) |
 | `beallit.js` | Repó neve + token 4 darabban (**nem titkosítás**, csak a titok-szkenner ellen) |
 | `teszt/logika.test.mjs` | `npm test` — összefésülés, id, fájlnév, szimulált GitHub 409-cel, hálózati hiba |
@@ -25,7 +26,8 @@ A teljes háttér, a döntések indoklása és a hibamentes újraépítés a sz�
 { "nev": "Peti",
   "szavak":      { "<id>": { "oszlop": "kik|mit|hol|csavar", "szoveg": "…", "torolve": false, "modositva": "ISO" } },
   "ertekelesek": { "<otletId>": { "kik": "…", "mit": "…", "hol": "…", "csavar": "…|null",
-                                  "kedvenc": true, "pont": 0, "megjegyzes": "", "modositva": "ISO" } },
+                                  "kedvenc": true, "pont": 0, "megjegyzes": "",
+                                  "nehez": 0, "ido": 0, "modositva": "ISO" } },
   "koncepciok":  { "<otletId>": { "pitch": "…", "ige": "…", "klip": "…", "helyszin": "…", "meret": "S|M|L",
                                   "bge": "…", "modositva": "ISO" } },
   "parbajok":    { "<idA>|<idB>": { "a": "<id>", "b": "<id>", "gyoztes": "<id>", "modositva": "ISO" } } }
@@ -37,6 +39,9 @@ A teljes háttér, a döntések indoklása és a hibamentes újraépítés a sz�
 - **Ötlet-link**: `?otlet=<otletId>` → Közös fül, odagörget, kinyitja a kártyát, majd törli a paramétert.
 - **Linkelőnézet**: `og:*` meta + `elonezet.png` (forrás: `eszkozok/elonezet.html`, 1200×630). Statikus oldalon
   minden linknek ugyanaz az előnézete; a Messenger gyorsítótáraz, változás után napokig a régit mutathatja.
+- **Becslés**: `nehez` 1–5, `ido` hetekben csak a `IDOK` értékei (1, 2, 4, 8, 13, 26, 52); 0 = nincs becslés.
+  Közös lista: nehézség átlag, idő medián a legközelebbi fokozatra kerekítve. „Gyors és jó" rendezés:
+  átlagpont ÷ log2(idő+1). A koncepciókártya „Méret S/M/L" mezője ettől független, egy közös szöveges címke.
 - Közös ötlet = amit legalább egy ember ♥-ezett (`kedvenc: true`). A szöveg az értékelésben utazik.
 - Egy embernek ötletenként egy értékelése van; a napló és a közös lista ugyanazt mutatja.
 - Törlés: `torolve: true` (különben az összefésülés visszahozná).
@@ -46,7 +51,7 @@ A teljes háttér, a döntések indoklása és a hibamentes újraépítés a sz�
 
 1. **Commit → `git pull --rebase` → push** — a böngészők közvetlenül commitolnak ide, és a rebase nem commitolt
    változásokkal megtagad.
-2. **Más fájljából jövő adat megbízhatatlan**: HTML-be csak `esc()`-en át; pont csak `pontSzam()`-on át;
+2. **Más fájljából jövő adat megbízhatatlan**: HTML-be csak `esc()`-en át; pont csak `pontSzam()`-on át, becslés csak `nehezSzam()`/`idoSzam()`-on át;
    szöveg csak `typeof === "string"` után. Új mező = új szűrés + próba `<img onerror>` adattal.
 3. A tároló szabályait (`tarolo.js` fejléce) ne lazítsd: helyi tár előbb; hálózati hiba nem dob; a hálózati kör
    UTÁN a friss helyi állapotot fésüld; „nem sikerült" ≠ „üres".
