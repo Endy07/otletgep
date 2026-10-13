@@ -203,7 +203,7 @@ h3{font-family:var(--display);font-weight:400;font-size:17px;margin:8px 0 0}
   .reel .value{font-size:clamp(18px,5.2vw,30px);line-height:1.15;hyphens:auto;overflow-wrap:break-word}
   .reel .reel-actions{justify-content:flex-end;gap:6px;flex-wrap:nowrap}
   .reel .reel-actions .chip{font-size:17px;padding:4px 8px;line-height:1.2}
-  .reel .add,.txt,#copy,.hint,#cur-note,#pitch{display:none}
+  .reel .add,.txt,#copy,.hint,#cur-note,#pitch,#cur-est{display:none}
   .pitch{padding:8px 10px}
   .rate-row{flex-wrap:nowrap}
   #cur-stars{display:flex;flex-wrap:nowrap;width:100%}
@@ -241,6 +241,7 @@ h3{font-family:var(--display);font-weight:400;font-size:17px;margin:8px 0 0}
         <span class="stars" id="cur-stars"></span>
         <input id="cur-note" type="text" placeholder="Megjegyzés ehhez az ötlethez…" aria-label="Megjegyzés az aktuális ötlethez">
       </div>
+      <div id="cur-est"></div>
     </div>
     <div class="controls">
       <button class="spin" id="spin">Pörgetés</button>
@@ -335,6 +336,6 @@ h3{font-family:var(--display);font-weight:400;font-size:17px;margin:8px 0 0}
 </div>
 <div class="toast" id="toast" hidden></div>
 
-<script type="module" src="app.js"></script>
+<script type="module" src="app.js?v=2026-10-14"></script>
 </body>
 </html>

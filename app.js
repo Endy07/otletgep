@@ -267,6 +267,7 @@ function renderCurrent() {
   const o = curIdea(), e = enErtekelesem(otletId(o));
   $("pitch").innerHTML = htmlOf(o);
   $("cur-stars").innerHTML = starsHtml(e?.pont || 0);
+  $("cur-est").innerHTML = becslesHtml(e);
   if (document.activeElement !== $("cur-note")) $("cur-note").value = e?.megjegyzes || "";
   const fav = !!e?.kedvenc;
   $("fav").innerHTML = fav ? `♥<span class="txt"> Kedvenc (megosztva)</span>` : `♡<span class="txt"> Kedvenc &amp; megosztás</span>`;
@@ -277,6 +278,12 @@ $("cur-stars").onclick = (ev) => {
   const b = ev.target.closest("[data-star]"); if (!b) return;
   const o = curIdea(), n = +b.dataset.star, regi = enErtekelesem(otletId(o))?.pont || 0;
   ertekel(o, { pont: regi === n ? 0 : n });
+};
+$("cur-est").onclick = (ev) => {
+  const o = curIdea(), e = enErtekelesem(otletId(o));
+  const nb = ev.target.closest("[data-nehez]"), ib = ev.target.closest("[data-ido]");
+  if (nb) { const n = +nb.dataset.nehez; ertekel(o, { nehez: nehezSzam(e?.nehez) === n ? 0 : n }); }
+  if (ib) { const n = +ib.dataset.ido; ertekel(o, { ido: idoSzam(e?.ido) === n ? 0 : n }); }
 };
 let jegyzetTimer;
 $("cur-note").oninput = (ev) => {
