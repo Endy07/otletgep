@@ -174,13 +174,10 @@ function buildReels() {
     el.innerHTML = `<div><span class="label">${LABELS[k]}</span></div>
       <div class="value" id="val-${k}"></div>
       <div class="reel-actions">
-        <button class="chip" data-lock="${k}" aria-pressed="${locked[k]}">${locked[k] ? "🔒 Zárolva" : "Zárolás"}</button>
-        <button class="chip" data-one="${k}">Csak ezt</button>
+        <button class="chip" data-lock="${k}" aria-pressed="${locked[k]}" aria-label="Zárolás: ${LABELS[k]}">${locked[k] ? "🔒" : "🔓"}<span class="txt"> ${locked[k] ? "Zárolva" : "Zárolás"}</span></button>
+        <button class="chip" data-one="${k}" aria-label="Csak ezt pörgesd: ${LABELS[k]}">🎲<span class="txt"> Csak ezt</span></button>
       </div>
-      <form class="add" data-add="${k}">
-        <input id="add-${k}" maxlength="80" placeholder="+ Saját elem…" aria-label="Saját elem: ${LABELS[k]}">
-        <button class="chip" type="submit">Hozzáad</button>
-      </form>`;
+      ${addFormHtml(k)}`;
     root.appendChild(el);
     showValue(k);
   }
@@ -197,9 +194,15 @@ $("reels").addEventListener("click", (ev) => {
   const one = ev.target.closest("[data-one]")?.dataset.one;
   if (one) spin([one]);
 });
-$("reels").addEventListener("submit", (ev) => {
+// Saját elem: a tárcsán (asztali nézet) és az Elemek fülön (mobilon csak ott) ugyanaz az űrlap.
+const addFormHtml = (k) => `<form class="add" data-add="${k}">
+    <input maxlength="80" placeholder="+ Saját elem…" aria-label="Saját elem: ${LABELS[k]}">
+    <button class="chip" type="submit">Hozzáad</button>
+  </form>`;
+function elemHozzaad(ev) {
+  const k = ev.target.dataset.add; if (!k) return;
   ev.preventDefault();
-  const k = ev.target.dataset.add, inp = $("add-" + k);
+  const inp = ev.target.querySelector("input");
   const szoveg = inp.value.trim().replace(/\s+/g, " ");
   if (!szoveg) return;
   const mar = keszlet(k).find((s) => s.toLowerCase() === szoveg.toLowerCase());
@@ -212,7 +215,9 @@ $("reels").addEventListener("submit", (ev) => {
   inp.value = "";
   rogzit();
   buildReels(); renderAll();
-});
+}
+$("reels").addEventListener("submit", elemHozzaad);
+$("words").addEventListener("submit", elemHozzaad);
 
 function rogzit() {
   naplo.unshift({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), ido: new Date().toISOString(), ...curIdea() });
@@ -263,7 +268,8 @@ function renderCurrent() {
   $("cur-stars").innerHTML = starsHtml(e?.pont || 0);
   if (document.activeElement !== $("cur-note")) $("cur-note").value = e?.megjegyzes || "";
   const fav = !!e?.kedvenc;
-  $("fav").textContent = fav ? "♥ Kedvenc (megosztva)" : "♡ Kedvenc & megosztás";
+  $("fav").innerHTML = fav ? `♥<span class="txt"> Kedvenc (megosztva)</span>` : `♡<span class="txt"> Kedvenc &amp; megosztás</span>`;
+  $("fav").setAttribute("aria-label", fav ? "Kedvenc (megosztva)" : "Kedvenc és megosztás");
   $("fav").setAttribute("aria-pressed", String(fav));
 }
 $("cur-stars").onclick = (ev) => {
@@ -494,11 +500,13 @@ $("kozos").addEventListener("submit", (ev) => {
 
 /* ---------- elemek fül ---------- */
 function renderElemek() {
-  const root = $("words"); root.innerHTML = "";
+  const root = $("words"), a = document.activeElement;
+  if (root.contains(a) && a.tagName === "INPUT" && a.value) return; // gépelés közben ne rajzoljuk újra
+  root.innerHTML = "";
   for (const k of KEYS) {
     const lista = sajatElemek(k).sort((a, b) => b.modositva.localeCompare(a.modositva));
     const col = document.createElement("div"); col.className = "wordcol";
-    col.innerHTML = `<span class="label">${LABELS[k]}</span>` + (lista.length
+    col.innerHTML = `<span class="label">${LABELS[k]}</span>` + addFormHtml(k) + (lista.length
       ? `<ul>${lista.map((w) => `<li><span>${esc(w.szoveg)}</span><em>${esc(w.szerzo)}</em>${w.f === fajl ? `<button class="chip" data-delword="${w.id}">Törlés</button>` : ""}</li>`).join("")}</ul>`
       : `<span class="empty">Még nincs saját elem.</span>`);
     root.appendChild(col);

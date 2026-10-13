@@ -180,6 +180,36 @@ section{display:grid;gap:12px}
 .rank-list .rt{flex:1;min-width:0;overflow-wrap:anywhere}
 .rank-list .rt b{color:var(--machine)}
 h3{font-family:var(--display);font-weight:400;font-size:17px;margin:8px 0 0}
+.wordcol .add{margin-bottom:4px}
+
+/* Mobil: a gépház egy teljes képernyő, mint egy alkalmazás — 2×2 nagy kártya, alatta pontozás és pörgetés.
+   A fejléc a lap aljára kerül (név, mentés állapota), a saját elem hozzáadása az Elemek fülön van. */
+@media (max-width:640px){
+  .wrap{padding-block:0 40px;gap:20px}
+  header{order:99;justify-content:center}
+  header > div:first-child{display:none}
+  .who{justify-content:center}
+  .machine{margin-inline:-16px;border-radius:0;box-shadow:none;padding:10px;gap:10px;
+    min-height:100vh;min-height:100svh;display:flex;flex-direction:column}
+  .reels,.reels.has-twist{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:1fr;gap:8px;flex:1}
+  .reels:not(.has-twist) .reel:last-child{grid-column:1/-1}
+  .reel{min-height:0;padding:10px;gap:4px;grid-template-rows:auto 1fr auto}
+  .reel .label{font-size:12px}
+  .reel .value{font-size:clamp(18px,5.2vw,30px);line-height:1.15;hyphens:auto;overflow-wrap:break-word}
+  .reel .reel-actions{justify-content:flex-end;gap:6px;flex-wrap:nowrap}
+  .reel .reel-actions .chip{font-size:17px;padding:4px 8px;line-height:1.2}
+  .reel .add,.txt,#copy,.hint,#cur-note,#pitch{display:none}
+  .pitch{padding:8px 10px}
+  .rate-row{flex-wrap:nowrap}
+  #cur-stars{display:flex;flex-wrap:nowrap;width:100%}
+  #cur-stars .star{flex:1;min-width:0;font-size:24px;padding-block:2px}
+  #cur-stars .score{margin-left:4px;min-width:2.8em;text-align:right}
+  .controls{display:grid;grid-template-columns:auto 1fr auto;gap:8px}
+  .controls .spin{order:2;padding:12px 10px}
+  #fav{order:1;font-size:22px;padding:8px 16px}
+  .toggle{order:3;margin-left:0;font-size:14px;gap:6px}
+  .toast{bottom:auto;top:12px}
+}
 [hidden]{display:none!important}
 @media (prefers-reduced-motion:reduce){.value.spinning{filter:none}}
 </style>
@@ -282,7 +312,7 @@ h3{font-family:var(--display);font-weight:400;font-size:17px;margin:8px 0 0}
   </section>
 
   <section id="pane-elemek" hidden>
-    <p class="lede">A haverok saját elemei, oszloponként. A sajátodat törölheted; a beépítettek a „Pörgetés" gombbal jönnek elő.</p>
+    <p class="lede">Itt adhatsz saját elemet bármelyik tárcsához; alatta a haverok elemei. A sajátodat törölheted; a beépítettek a „Pörgetés" gombbal jönnek elő.</p>
     <div class="words" id="words"></div>
   </section>
 </div>
