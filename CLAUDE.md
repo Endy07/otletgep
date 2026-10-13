@@ -68,5 +68,7 @@ A teljes háttér, a döntések indoklása és a hibamentes újraépítés a sz�
    és a tárcsák alatti mondat rejtve. Gombokban a szöveg `<span class="txt">` (mobilon rejtve) + `aria-label`.
    Saját elem: `addFormHtml(k)` + `elemHozzaad` — a tárcsán (asztali) és az Elemek fülön (mindig). Új vezérlő a
    gépházba csak úgy, hogy 360×640-en is kiférjen. Részletek: `../docs/runbook-kozos-github-oldal.md` 10. pont.
+9. **`app.js` változásakor léptesd a verziót** az `index.html` végén (`app.js?v=…`) — a böngésző különben a
+   gyorsítótárból a régit futtatja (2026-10-14).
 8. **Felület-próba élesírás nélkül**: Playwrightban `context.route(/api\.github\.com/, r => r.abort())`, a végén
    `localStorage.clear()` (runbook 7/6.).
